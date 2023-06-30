@@ -3,9 +3,7 @@ import numpy as np
 from numpy.linalg import eig
 import matplotlib.pyplot as plt
 # initial data
-<<<<<<< HEAD
 P_0=3000000.1  # kW thermal
-=======
 # initial datalarrrr
 P_0=3000000  # kW thermal
 >>>>>>> refs/remotes/origin/main
