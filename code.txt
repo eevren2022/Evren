@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 # initial data
 P_0=3000000.1  # kW thermal
 # initial datalarrrr
-P_0=3000000  # kW thermal
->>>>>>> refs/remotes/origin/main
 Delta_T=500 # °C
 Tin_0=280 # °C
 M_f=100000 # kg
