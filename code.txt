@@ -1,0 +1,93 @@
+from scipy import signal
+import numpy as np
+from numpy.linalg import eig
+import matplotlib.pyplot as plt
+# initial data
+P_0=3000000  # kW thermal
+Delta_T=500 # °C
+Tin_0=280 # °C
+M_f=100000 # kg
+C_f=0.35 # kJ/(kg*K)
+M_c=13000 # kg
+C_c=5.5 # kJ/(kg*K)
+G=10000 # kg/s
+L=10**(-5)
+b=650/(10**5)
+li=np.array([0.0124,0.0305,0.111,0.301,1.14,3.01])
+bi=b*np.array([0.033,0.219,0.196,0.395,0.115,0.042])
+# feedback coefficients
+                        #NOTE tipical values for a PWR are:
+alpha_f = -1.5*1e-5           #      -3< af <-1   [pcm/°C]
+alpha_c = -5*1e-5             #      -35< ac <5    [pcm/°C]
+alpha_h = 10*1e-5             #      ah ~ 10-15   [pcm/cm]
+# Calculated parameters
+K=P_0/Delta_T # kW/°C
+tau_f=M_f*C_f/K #s
+tau_c=M_c*C_c/K #s
+tau_0=M_c/G #s
+l=(np.sum(np.divide(bi,li))/b)**(-1)
+# A,B,C,D Matrices
+A=np.array([[-b/L,b/L,alpha_f/L,alpha_c/L], [l,-l,0,0],[P_0/K,0,-1/tau_f,1/tau_f],[0,0,1/tau_c,-1/tau_c-2/tau_0]])
+B=np.array([[alpha_h/L,0],[0,0],[0,0],[0,2/tau_0]])
+C=np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],[0,0,0,2],[0,0,alpha_f,alpha_c]])
+D=np.array([[0,0],[0,0],[0,0],[0,0],[0,-1],[alpha_h, 0]])
+# SS Model
+Dyn1_PWR = signal.StateSpace(A,B,C,D)
+print(Dyn1_PWR)
+# Eigenvalues calculation
+w,v=eig(A)
+print('E-value:', w)
+print('E-vector', v)
+# Initial state of the system
+X0=[0,0,0,0]
+# time points
+t = np.linspace(0,50,300000)
+#input
+U=[[0],[0]]
+# Simulation
+TF_h=signal.ss2tf(A, B, C, D,input=0)
+TF_T0=signal.ss2tf(A, B, C, D,input=1)
+print(TF_h)
+print(TF_T0)
+# time points
+t = np.linspace(0,5,300000)
+t, Y_h = signal.step(TF_h,X0=[0,0,0,0],T= t)
+t, Y_T0 = signal.step(TF_T0,X0=[0,0,0,0],T= t)
+fig, axs = plt.subplots(6, 2,figsize=(20, 20))
+axs[0, 0].plot(t, Y_h[:,0]*P_0/1000)
+axs[0, 0].set_title('Power_P (MW)')
+axs[0, 0].grid()
+axs[1, 0].plot(t, Y_h[:,1],)
+axs[1, 0].set_title('Normalized precursors (-)')
+axs[1, 0].grid()
+axs[2, 0].plot(t, Y_h[:,2], )
+axs[2, 0].set_title('Tf_h')
+axs[2, 0].grid()
+axs[3, 0].plot(t, Y_h[:,3])
+axs[3, 0].set_title('Tc_h')
+axs[3, 0].grid()
+axs[4, 0].plot(t, Y_h[:,4],)
+axs[4, 0].set_title('Tout_h')
+axs[4, 0].grid()
+axs[5, 0].plot(t, Y_h[:,5]*10**5, )
+axs[5, 0].set_title('Total reactivity (pcm)')
+axs[5, 0].grid()
+axs[0, 1].plot(t, Y_T0[:,0]*P_0/1000, 'tab:orange')
+axs[0, 1].set_title('Power_T0 (MW)')
+axs[0, 1].grid()
+axs[1, 1].plot(t, Y_T0[:,1], 'tab:orange')
+axs[1, 1].set_title('Normalized precursors (-)')
+axs[1, 1].grid()
+axs[2, 1].plot(t, Y_T0[:,2], 'tab:orange')
+axs[2, 1].set_title('Tf_T0')
+axs[2, 1].grid()
+axs[3, 1].plot(t, Y_T0[:,3], 'tab:orange')
+axs[3, 1].set_title('Tc_T0')
+axs[3, 1].grid()
+axs[4, 1].plot(t, Y_T0[:,4], 'tab:orange')
+axs[4, 1].set_title('Tout_T0')
+axs[4, 1].grid()
+axs[5, 1].plot(t, Y_T0[:,5]*10**5, 'tab:orange')
+axs[5, 1].set_title('Total reactivity (pcm)')
+axs[5, 1].grid()
+#print("Dominant eigenvalue: " + str(h))
