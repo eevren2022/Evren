@@ -3,7 +3,7 @@ import numpy as np
 from numpy.linalg import eig
 import matplotlib.pyplot as plt
 # initial data
-P_0=3000000  # kW thermal
+P_0=3000000,1  # kW thermal
 Delta_T=500 # °C
 Tin_0=280 # °C
 M_f=100000 # kg
